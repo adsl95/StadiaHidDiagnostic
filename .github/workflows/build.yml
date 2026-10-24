@@ -1,0 +1,30 @@
+name: Stadia HID Diagnostic Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'StadiaHidDiagnostic/**'
+      - '.github/workflows/build.yml'
+      - 'README.md'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Publish self-contained x64 executable
+        run: >-
+          dotnet publish .\StadiaHidDiagnostic\StadiaHidDiagnostic.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o .\publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StadiaHidDiagnostic-win-x64
+          path: .\publish\StadiaHidDiagnostic.exe
+          if-no-files-found: error
